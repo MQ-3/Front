@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import iconSafe from '../assets/건강해.png'
+import iconCaution from '../assets/주의가 필요함.png'
+import iconDanger from '../assets/만취.png'
 
 const DUMMY_STATE = 'caution'
 // "safe" / "caution" / "danger" 중 하나로 바꿔서 테스트
@@ -35,7 +38,7 @@ const STATE_UI = {
     textColor: 'text-green-600',
     badgeBg: 'bg-green-600',
     recordBorder: 'border-green-100',
-    emoji: '💪',
+    icon: iconSafe,
     headline: '건강한 상태입니다',
     badge: '양호',
     message:
@@ -46,18 +49,18 @@ const STATE_UI = {
     textColor: 'text-[#ca8a04]',
     badgeBg: 'bg-[#eab308]',
     recordBorder: 'border-yellow-100',
-    emoji: '🧑‍⚕️',
+    icon: iconCaution,
     headline: '주의가 필요합니다',
     badge: '주의 필요',
     message:
-      '음주량이 많아지고 있습니다. 건강을 위해 음주를 자제하세요.',
+      '음주량이 많아지고 있습니다.',
   },
   danger: {
     cardBg: 'bg-[#fdecea]',
     textColor: 'text-red-600',
     badgeBg: 'bg-red-600',
     recordBorder: 'border-red-100',
-    emoji: '🚨',
+    icon: iconDanger,
     headline: '위험한 상태입니다',
     badge: '위험',
     message: '즉시 음주를 멈추세요. 물을 마시고 휴식하세요.',
@@ -156,12 +159,7 @@ export default function StatusPage() {
           <section
             className={`${ui.cardBg} rounded-2xl p-8 flex flex-col items-center text-center`}
           >
-            <span className="text-5xl mb-4" role="img" aria-hidden="true">
-              {ui.emoji}
-            </span>
-            <p className={`${ui.textColor} text-lg font-semibold mb-2`}>
-              {ui.headline}
-            </p>
+            <img src={ui.icon} alt={ui.headline} className="w-40 h-40 object-contain mb-4" />
             <p className={`${ui.textColor} text-5xl font-bold mb-4`}>
               {percent}
             </p>
@@ -170,7 +168,7 @@ export default function StatusPage() {
             >
               {ui.badge}
             </span>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <p className="text-gray-600 text-base leading-relaxed">
               {ui.message}
             </p>
           </section>

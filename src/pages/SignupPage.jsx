@@ -21,13 +21,16 @@ export default function SignupPage() {
 
     setSubmitting(true)
     try {
-      const { data } = await api.register({ email, password })
-      if (data?.success) {
-        alert('회원가입이 완료되었습니다. 로그인해주세요.')
-        navigate('/login')
-      } else {
-        alert('이미 사용 중인 이메일입니다.')
-      }
+      // const { data } = await api.register({ email, password })
+      // if (data?.success) {
+      //   alert('회원가입이 완료되었습니다. 로그인해주세요.')
+      //   navigate('/login')
+      // } else {
+      //   alert('이미 사용 중인 이메일입니다.')
+      // }
+
+      alert('회원가입이 완료되었습니다. 로그인해주세요.')
+      navigate('/login')
     } catch {
       alert('이미 사용 중인 이메일입니다.')
     } finally {

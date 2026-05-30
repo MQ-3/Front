@@ -8,14 +8,23 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  const DUMMY_USER = { id: 1, email: 'test@test.com', password: '123456' }
+
   async function handleLogin() {
     if (!email || !password) return
 
     setSubmitting(true)
     try {
-      const { data } = await api.login({ email, password })
-      if (data?.success) {
-        localStorage.setItem('user', JSON.stringify({ id: data.user_id, email: data.email }))
+      // const { data } = await api.login({ email, password })
+      // if (data?.success) {
+      //   localStorage.setItem('user', JSON.stringify({ id: data.user_id, email: data.email }))
+      //   navigate('/')
+      // } else {
+      //   alert('이메일 또는 비밀번호가 올바르지 않습니다.')
+      // }
+
+      if (email === DUMMY_USER.email && password === DUMMY_USER.password) {
+        localStorage.setItem('user', JSON.stringify({ id: DUMMY_USER.id, email: DUMMY_USER.email }))
         navigate('/')
       } else {
         alert('이메일 또는 비밀번호가 올바르지 않습니다.')

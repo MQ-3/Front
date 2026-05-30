@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import BottomNav from './components/BottomNav'
 import TodayPage from './pages/TodayPage'
 import StatusPage from './pages/StatusPage'
@@ -7,6 +8,29 @@ import HealthPage from './pages/HealthPage'
 import MyPage from './pages/MyPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual'
+    }
+  }, [])
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, [pathname])
+  return null
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }, [pathname])
+  return null
+}
 
 function LoginOverlay() {
   const navigate = useNavigate()
@@ -53,6 +77,7 @@ function RequireAuth({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<TodayPage />} />
         <Route path="/status" element={<RequireAuth><StatusPage /></RequireAuth>} />

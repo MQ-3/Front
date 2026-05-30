@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
+import iconHealth from '../assets/건강한 간.png'
+import iconCaution from '../assets/주의가 필요한 간.png'
+import iconDanger from '../assets/아픈 간.png'
 
 const DUMMY_DRINK_DAYS = 8
 // 0 / 1~6 / 7~12 / 13~19 / 20 이상으로 바꿔서 5단계 전부 테스트
@@ -93,7 +96,7 @@ const LEVEL_BANNER = {
     border: 'border-blue-200',
     titleColor: 'text-blue-600',
     subtitleColor: 'text-blue-500',
-    icon: '⭐',
+    icon: iconHealth,
     title: '완벽한 한 달입니다!',
     subtitle: (n) => `이번 달 음주 ${n}일`,
   },
@@ -102,7 +105,7 @@ const LEVEL_BANNER = {
     border: 'border-green-200',
     titleColor: 'text-green-600',
     subtitleColor: 'text-green-600',
-    icon: '💚',
+    icon: iconHealth,
     title: '건강 관리 양호',
     subtitle: (n) => `이번 달 ${n}일 음주하셨네요`,
   },
@@ -111,7 +114,7 @@ const LEVEL_BANNER = {
     border: 'border-yellow-300',
     titleColor: 'text-[#ca8a04]',
     subtitleColor: 'text-[#ca8a04]',
-    icon: '⚠️',
+    icon: iconCaution,
     title: '건강 관리 필요',
     subtitle: (n) => `이번 달 ${n}일 음주하셨네요`,
   },
@@ -120,7 +123,7 @@ const LEVEL_BANNER = {
     border: 'border-orange-300',
     titleColor: 'text-orange-600',
     subtitleColor: 'text-orange-600',
-    icon: '🚨',
+    icon: iconCaution,
     title: '건강 관리 필요',
     subtitle: (n) => `이번 달 ${n}일 음주하셨네요`,
   },
@@ -129,7 +132,7 @@ const LEVEL_BANNER = {
     border: 'border-red-300',
     titleColor: 'text-red-600',
     subtitleColor: 'text-red-600',
-    icon: '🏥',
+    icon: iconDanger,
     title: '병원 방문을 권고합니다',
     subtitle: (n) => `이번 달 ${n}일 음주하셨네요`,
   },
@@ -225,9 +228,7 @@ export default function HealthPage() {
             <section
               className={`${banner.bg} border ${banner.border} rounded-2xl p-8 flex flex-col items-center text-center`}
             >
-              <span className="text-4xl mb-3" role="img" aria-hidden="true">
-                {banner.icon}
-              </span>
+              <img src={banner.icon} alt={banner.title} className="w-40 h-40 object-contain mb-3" />
               <h2 className={`${banner.titleColor} text-xl font-bold mb-2`}>
                 {banner.title}
               </h2>

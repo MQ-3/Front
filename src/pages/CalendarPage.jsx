@@ -175,7 +175,10 @@ export default function CalendarPage() {
   }, [fetchStats])
 
   useEffect(() => {
-    if (viewMode === 'week') fetchWeek()
+    if (viewMode === 'week') {
+      window.scrollTo(0, 0)
+      fetchWeek()
+    }
   }, [viewMode, fetchWeek])
 
   useEffect(() => {
@@ -222,7 +225,7 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-20">
+    <div className={`bg-gray-100 pb-20 ${viewMode === 'week' ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       <header className="bg-white border-b border-gray-200 py-4">
         <h1 className="text-center text-base font-medium text-gray-900">
           음주 측정 모니터링
