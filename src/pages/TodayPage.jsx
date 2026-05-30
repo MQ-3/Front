@@ -83,6 +83,15 @@ export default function TodayPage() {
   const [drinkType, setDrinkType] = useState('소주')
   const [drinkAmount, setDrinkAmount] = useState('')
 
+  function getUserId() {
+    try {
+      const stored = localStorage.getItem('user')
+      return stored ? JSON.parse(stored).id : null
+    } catch {
+      return null
+    }
+  }
+
   const fetchLogs = useCallback(async () => {
     try {
       const { data } = await api.logsToday()
@@ -130,6 +139,7 @@ export default function TodayPage() {
         state_level: data.state.level,
         state_label: data.state.label,
         state_message: data.state.message,
+        user_id: getUserId(),
       })
 
       await fetchLogs()
@@ -152,6 +162,7 @@ export default function TodayPage() {
         drink_type: drinkType,
         drink_amount: Number(drinkAmount),
         drink_unit: 'ml',
+        user_id: getUserId(),
       })
 
       setDrinkAmount('')

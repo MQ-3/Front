@@ -1,8 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 
 const tabs = [
-  { label: '상태', path: '/' },
-  { label: '오늘 측정', path: '/today' },
+  { label: '오늘 측정', path: '/' },
+  { label: '상태', path: '/status' },
   { label: '달력', path: '/calendar' },
   { label: '건강 관리', path: '/health' },
   { label: '마이페이지', path: '/mypage' },

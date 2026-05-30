@@ -134,9 +134,18 @@ export default function CalendarPage() {
     viewYear < currentYear ||
     (viewYear === currentYear && viewMonth < currentMonth)
 
+  function getUserId() {
+    try {
+      const stored = localStorage.getItem('user')
+      return stored ? JSON.parse(stored).id : null
+    } catch {
+      return null
+    }
+  }
+
   const fetchWeek = useCallback(async () => {
     try {
-      const { data } = await api.week()
+      const { data } = await api.week(getUserId())
       if (data?.success) setWeekData(data)
     } catch (error) {
       console.error('Failed to fetch week logs:', error)
@@ -145,7 +154,7 @@ export default function CalendarPage() {
 
   const fetchMonth = useCallback(async (year, month) => {
     try {
-      const { data } = await api.calendarMonth(year, month)
+      const { data } = await api.calendarMonth(year, month, getUserId())
       if (data?.success) setMonthData(data)
     } catch (error) {
       console.error('Failed to fetch calendar month:', error)
@@ -154,7 +163,7 @@ export default function CalendarPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const { data } = await api.calendarMonth(currentYear, currentMonth)
+      const { data } = await api.calendarMonth(currentYear, currentMonth, getUserId())
       if (data?.success) setStatsData(data)
     } catch (error) {
       console.error('Failed to fetch month stats:', error)

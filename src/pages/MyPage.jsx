@@ -1,20 +1,6 @@
 import { useEffect, useState } from 'react'
-
-const DUMMY_LOGGED_IN = false
-// true / false 로 비로그인·로그인 화면 테스트
-
-const DUMMY_USER = {
-  id: 1,
-  email: 'ha@test.com',
-}
-
-const DUMMY_LOGIN = {
-  email: 'ha@test.com',
-  password: '123456',
-}
-
-const DUMMY_REGISTERED_EMAILS = ['taken@test.com']
-// 회원가입 시 "이미 사용 중" 테스트용
+import { useNavigate } from 'react-router-dom'
+import { api } from '../api/index.js'
 
 function ProfileIcon({ loggedIn }) {
   return (
@@ -35,155 +21,35 @@ function ProfileIcon({ loggedIn }) {
   )
 }
 
-function ModalBackdrop({ children, onClose }) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-      onClick={onClose}
-      role="presentation"
-    >
-      <div
-        className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-lg"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
-        {children}
-      </div>
-    </div>
-  )
-}
-
 export default function MyPage() {
+  const navigate = useNavigate()
   const [user, setUser] = useState(null)
-  const [modal, setModal] = useState(null)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [passwordConfirm, setPasswordConfirm] = useState('')
-  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    // const stored = localStorage.getItem('user')
-    // if (stored) {
-    //   try {
-    //     setUser(JSON.parse(stored))
-    //   } catch {
-    //     localStorage.removeItem('user')
-    //   }
-    // }
-
-    if (DUMMY_LOGGED_IN) {
-      localStorage.setItem('user', JSON.stringify(DUMMY_USER))
-      setUser(DUMMY_USER)
-    } else {
-      localStorage.removeItem('user')
-      setUser(null)
+    const stored = localStorage.getItem('user')
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored))
+      } catch {
+        localStorage.removeItem('user')
+      }
     }
   }, [])
 
-  function openLoginModal() {
-    setEmail('')
-    setPassword('')
-    setPasswordConfirm('')
-    setModal('login')
-  }
-
-  function openSignupModal() {
-    setEmail('')
-    setPassword('')
-    setPasswordConfirm('')
-    setModal('signup')
-  }
-
-  function closeModal() {
-    setModal(null)
-    setEmail('')
-    setPassword('')
-    setPasswordConfirm('')
-  }
-
-  function saveUser(userData) {
-    localStorage.setItem('user', JSON.stringify(userData))
-    setUser(userData)
-  }
-
-  function clearUser() {
+  function handleLogout() {
     localStorage.removeItem('user')
     setUser(null)
-  }
-
-  async function handleLogin() {
-    setSubmitting(true)
-    try {
-      // const { data } = await api.login({ email, password })
-      // if (data?.success && data.user) {
-      //   saveUser(data.user)
-      //   closeModal()
-      // } else {
-      //   alert('이메일 또는 비밀번호가 틀렸습니다.')
-      // }
-
-      if (email === DUMMY_LOGIN.email && password === DUMMY_LOGIN.password) {
-        saveUser({ ...DUMMY_USER, email })
-        closeModal()
-      } else {
-        alert('이메일 또는 비밀번호가 틀렸습니다.')
-      }
-    } catch {
-      alert('이메일 또는 비밀번호가 틀렸습니다.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  async function handleSignup() {
-    if (password.length < 6) {
-      alert('비밀번호는 6자 이상이어야 합니다.')
-      return
-    }
-    if (password !== passwordConfirm) {
-      alert('비밀번호가 일치하지 않습니다.')
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      // const { data } = await api.register({ email, password })
-      // if (data?.success) {
-      //   closeModal()
-      //   alert('회원가입이 완료되었습니다. 로그인해주세요.')
-      // } else {
-      //   alert('이미 사용 중인 이메일입니다.')
-      // }
-
-      const isDuplicate =
-        email === DUMMY_LOGIN.email ||
-        DUMMY_REGISTERED_EMAILS.includes(email)
-
-      if (isDuplicate) {
-        alert('이미 사용 중인 이메일입니다.')
-        return
-      }
-
-      closeModal()
-      alert('회원가입이 완료되었습니다. 로그인해주세요.')
-    } catch {
-      alert('이미 사용 중인 이메일입니다.')
-    } finally {
-      setSubmitting(false)
-    }
   }
 
   async function handleDeleteAccount() {
     if (!window.confirm('정말 탈퇴하시겠습니까?')) return
 
     try {
-      // const { data } = await api.deleteAccount(user.id)
-      // if (data?.success) {
-      //   clearUser()
-      // }
-
-      clearUser()
+      const { data } = await api.deleteAccount(user.id)
+      if (data?.success) {
+        localStorage.removeItem('user')
+        setUser(null)
+      }
     } catch (error) {
       console.error('Failed to delete account:', error)
     }
@@ -208,7 +74,14 @@ export default function MyPage() {
               <p className="text-3xl font-bold text-gray-900 mt-5">
                 {emailInitial}
               </p>
-              <p className="text-gray-500 text-sm mt-1">회원</p>
+              <p className="text-gray-500 text-sm mt-1">{user.email}</p>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="mt-6 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 rounded-xl transition-colors"
+              >
+                로그아웃
+              </button>
             </>
           ) : (
             <>
@@ -221,14 +94,14 @@ export default function MyPage() {
               <div className="w-full space-y-3">
                 <button
                   type="button"
-                  onClick={openLoginModal}
+                  onClick={() => navigate('/login')}
                   className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-xl transition-colors"
                 >
                   로그인
                 </button>
                 <button
                   type="button"
-                  onClick={openSignupModal}
+                  onClick={() => navigate('/signup')}
                   className="w-full bg-white border border-blue-500 text-blue-500 font-medium py-3 rounded-xl transition-colors"
                 >
                   회원가입
@@ -245,100 +118,12 @@ export default function MyPage() {
               onClick={handleDeleteAccount}
               className="w-full flex items-center justify-center gap-2 border border-red-400 text-red-500 font-medium py-3 rounded-xl hover:bg-red-50 transition-colors"
             >
-              <span role="img" aria-hidden="true">
-                🗑️
-              </span>
+              <span role="img" aria-hidden="true">🗑️</span>
               회원 탈퇴
             </button>
           </section>
         )}
       </main>
-
-      {modal === 'login' && (
-        <ModalBackdrop onClose={closeModal}>
-          <h2 className="text-lg font-bold text-gray-900 mb-4">로그인</h2>
-          <div className="space-y-0 border border-gray-200 rounded-lg overflow-hidden mb-6">
-            <input
-              type="email"
-              placeholder="이메일"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border-b border-gray-200 outline-none focus:bg-gray-50"
-            />
-            <input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 outline-none focus:bg-gray-50"
-            />
-          </div>
-          <div className="flex justify-end items-center gap-3">
-            <button
-              type="button"
-              onClick={closeModal}
-              className="text-gray-500 font-medium px-2 py-1"
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              onClick={handleLogin}
-              disabled={submitting}
-              className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium px-5 py-2 rounded-lg transition-colors"
-            >
-              로그인
-            </button>
-          </div>
-        </ModalBackdrop>
-      )}
-
-      {modal === 'signup' && (
-        <ModalBackdrop onClose={closeModal}>
-          <h2 className="text-lg font-bold text-gray-900 mb-4">회원가입</h2>
-          <div className="space-y-0 border border-gray-200 rounded-lg overflow-hidden mb-2">
-            <input
-              type="email"
-              placeholder="이메일"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border-b border-gray-200 outline-none focus:bg-gray-50"
-            />
-            <input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border-b border-gray-200 outline-none focus:bg-gray-50"
-            />
-            <input
-              type="password"
-              placeholder="비밀번호 확인"
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
-              className="w-full px-4 py-3 outline-none focus:bg-gray-50"
-            />
-          </div>
-          <p className="text-xs text-gray-400 mb-6">6자 이상 입력해주세요</p>
-          <div className="flex justify-end items-center gap-3">
-            <button
-              type="button"
-              onClick={closeModal}
-              className="text-gray-500 font-medium px-2 py-1"
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              onClick={handleSignup}
-              disabled={submitting}
-              className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium px-5 py-2 rounded-lg transition-colors"
-            >
-              가입하기
-            </button>
-          </div>
-        </ModalBackdrop>
-      )}
     </div>
   )
 }
