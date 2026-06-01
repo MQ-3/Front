@@ -12,22 +12,7 @@ import SignupPage from './pages/SignupPage'
 function ScrollToTop() {
   const { pathname } = useLocation()
   useEffect(() => {
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual'
-    }
-  }, [])
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' })
-  }, [pathname])
-  return null
-}
-
-function ScrollToTop() {
-  const { pathname } = useLocation()
-  useEffect(() => {
     window.scrollTo(0, 0)
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
   }, [pathname])
   return null
 }
