@@ -94,7 +94,7 @@ export default function ProfileSetupPage() {
         </div>
 
         <p className="text-xs text-gray-400 -mt-6 mb-8 px-1">
-          한병 = 1 · 한병 반 = 1.5 · 두병 = 2 · 두병 반 = 2.5 (0.5 단위 입력)
+          소주 기준, 한병 = 1 · 한병 반 = 1.5 · 두병 = 2 · 두병 반 = 2.5 (0.5 단위 입력)
         </p>
 
         <button

@@ -2,7 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 
-const DRINK_TYPES = ['소주', '맥주', '막걸리']
+const DRINK_TYPES = ['소주', '맥주']
+
+const SOJU_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8]
+const BEER_OPTIONS = [1, 2, 3, 4, 5]
 
 const STATE_UI = {
   safe: {
@@ -86,7 +89,8 @@ export default function TodayPage() {
   const [phaseCount, setPhaseCount] = useState(null)
   const [adding, setAdding] = useState(false)
   const [drinkType, setDrinkType] = useState('소주')
-  const [drinkAmount, setDrinkAmount] = useState('')
+  const [drinkQuantity, setDrinkQuantity] = useState(1)
+  const [exceededTolerance, setExceededTolerance] = useState(false)
   const navigate = useNavigate()
 
   function getUserId() {
@@ -100,11 +104,13 @@ export default function TodayPage() {
 
   const fetchLogs = useCallback(async () => {
     try {
-      const { data } = await api.logsToday()
+      const userId = getUserId()
+      const { data } = await api.logsToday(userId)
       if (data?.success) {
         const nextLogs = data.logs ?? []
         setLogs(nextLogs)
         setCurrentMeasure(getLatestMeasurement(nextLogs))
+        setExceededTolerance(data.exceeded_tolerance ?? false)
       }
     } catch (error) {
       console.error('Failed to fetch today logs:', error)
@@ -184,7 +190,9 @@ export default function TodayPage() {
   }
 
   async function handleAddDrink() {
-    if (!drinkType || !drinkAmount) return
+    if (!drinkType || !drinkQuantity) return
+
+    const unit = drinkType === '소주' ? '잔' : '캔'
 
     setAdding(true)
     try {
@@ -193,12 +201,12 @@ export default function TodayPage() {
         state_level: 'safe',
         state_label: '안정 단계',
         drink_type: drinkType,
-        drink_amount: Number(drinkAmount),
-        drink_unit: 'ml',
+        drink_amount: Number(drinkQuantity),
+        drink_unit: unit,
         user_id: getUserId(),
       })
 
-      setDrinkAmount('')
+      setDrinkQuantity(1)
       await fetchLogs()
     } catch (error) {
       console.error('Failed to add drink log:', error)
@@ -245,9 +253,15 @@ export default function TodayPage() {
             {!measurePhase && (
               <>
                 <p className={`${ui.text} text-5xl font-bold mb-3`}>{percent}</p>
-                <span className={`${ui.badge} text-white font-medium px-5 py-1.5 rounded-full mb-5`}>
+                <span className={`${ui.badge} text-white font-medium px-5 py-1.5 rounded-full mb-2`}>
                   {currentMeasure.state_label || ui.badgeText}
                 </span>
+                {exceededTolerance && (
+                  <p className="text-red-600 text-sm font-medium mb-3">
+                    주량을 넘겼어요. 주의하세요.
+                  </p>
+                )}
+                {!exceededTolerance && <div className="mb-3" />}
                 <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className={`h-full ${ui.bar} rounded-full transition-all duration-300`}
@@ -283,7 +297,7 @@ export default function TodayPage() {
               </span>
               <select
                 value={drinkType}
-                onChange={(e) => setDrinkType(e.target.value)}
+                onChange={(e) => { setDrinkType(e.target.value); setDrinkQuantity(1) }}
                 className="w-full border border-gray-300 rounded-lg px-3 pt-4 pb-2 text-gray-900 bg-white"
               >
                 {DRINK_TYPES.map((type) => (
@@ -296,23 +310,33 @@ export default function TodayPage() {
 
             <label className="flex-1 relative">
               <span className="absolute -top-2 left-3 px-1 bg-white text-xs text-gray-500">
-                양 (ml)
+                {drinkType === '소주' ? '잔 수' : '캔 수'}
               </span>
-              <input
-                type="number"
-                min="1"
-                value={drinkAmount}
-                onChange={(e) => setDrinkAmount(e.target.value)}
-                placeholder="양 (ml)"
-                className="w-full border border-gray-300 rounded-lg px-3 pt-4 pb-2 text-gray-900"
-              />
+              <select
+                value={drinkQuantity}
+                onChange={(e) => setDrinkQuantity(Number(e.target.value))}
+                className="w-full border border-gray-300 rounded-lg px-3 pt-4 pb-2 text-gray-900 bg-white"
+              >
+                {(drinkType === '소주' ? SOJU_OPTIONS : BEER_OPTIONS).map((n) => (
+                  <option key={n} value={n}>
+                    {drinkType === '소주' ? `${n}잔` : `${n}캔`}
+                  </option>
+                ))}
+              </select>
             </label>
           </div>
+
+          {drinkType === '소주' && (
+            <p className="text-xs text-gray-400">8잔 = 소주 1병 기준</p>
+          )}
+          {drinkType === '맥주' && (
+            <p className="text-xs text-gray-400">500ml 1캔 기준</p>
+          )}
 
           <button
             type="button"
             onClick={handleAddDrink}
-            disabled={adding || !drinkType || !drinkAmount}
+            disabled={adding || !drinkType}
             className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white font-medium py-3 rounded-xl transition-colors"
           >
             ＋ 추가

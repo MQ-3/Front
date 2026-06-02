@@ -85,6 +85,7 @@ export default function StatusPage() {
   const [logs, setLogs] = useState([])
   const [current, setCurrent] = useState(DEFAULT_MEASURE)
   const [loading, setLoading] = useState(true)
+  const [exceededTolerance, setExceededTolerance] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -92,11 +93,14 @@ export default function StatusPage() {
     async function fetchData() {
       setLoading(true)
       try {
-        const { data } = await api.logsToday()
+        const stored = localStorage.getItem('user')
+        const userId = stored ? JSON.parse(stored).id : null
+        const { data } = await api.logsToday(userId)
         if (!cancelled && data?.success) {
           const nextLogs = data.logs ?? []
           setLogs(nextLogs)
           setCurrent(getLatestMeasurement(nextLogs))
+          setExceededTolerance(data.exceeded_tolerance ?? false)
         }
       } catch (error) {
         console.error('Failed to fetch today logs:', error)
@@ -115,6 +119,7 @@ export default function StatusPage() {
   const sensorValue = current.sensor_value
   const percent = sensorToPercent(sensorValue)
   const ui = getStateUi(stateLevel)
+
 
   const sortedLogs = [...logs]
     .filter((log) => log.sensor_value > 0)
@@ -145,10 +150,16 @@ export default function StatusPage() {
               {percent}
             </p>
             <span
-              className={`${ui.badgeBg} text-white font-medium px-6 py-2 rounded-full mb-6`}
+              className={`${ui.badgeBg} text-white font-medium px-6 py-2 rounded-full mb-2`}
             >
               {ui.badge}
             </span>
+            {exceededTolerance && (
+              <p className="text-red-600 text-sm font-medium mb-4">
+                주량을 넘겼어요. 그만 먹어
+              </p>
+            )}
+            {!exceededTolerance && <div className="mb-4" />}
             <p className="text-gray-600 text-base leading-relaxed">
               {ui.message}
             </p>
