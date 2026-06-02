@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = 'http://192.168.30.7:5000'
+const BASE_URL = 'http://192.168.30.14:5000'
 
 export const api = {
   measure: () => axios.post(`${BASE_URL}/api/measure`),
@@ -13,6 +13,7 @@ export const api = {
   unlock: () => axios.post(`${BASE_URL}/api/shorts/unlock`),
   register: (data) => axios.post(`${BASE_URL}/api/auth/register`, data),
   login: (data) => axios.post(`${BASE_URL}/api/auth/login`, data),
+  updateProfile: (data) => axios.put(`${BASE_URL}/api/auth/profile`, data),
   deleteAccount: (userId) =>
     axios.delete(`${BASE_URL}/api/auth/delete`, { data: { user_id: userId } }),
 }

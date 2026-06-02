@@ -8,6 +8,8 @@ import HealthPage from './pages/HealthPage'
 import MyPage from './pages/MyPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import ProfileSetupPage from './pages/ProfileSetupPage'
+import ShortsPage from './pages/ShortsPage'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -71,6 +73,8 @@ export default function App() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/profile-setup" element={<ProfileSetupPage />} />
+        <Route path="/shorts" element={<ShortsPage />} />
       </Routes>
       <BottomNav />
     </BrowserRouter>

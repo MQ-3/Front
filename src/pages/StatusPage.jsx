@@ -1,35 +1,18 @@
 import { useEffect, useState } from 'react'
+import { api } from '../api'
 import iconSafe from '../assets/건강해.png'
 import iconCaution from '../assets/주의가 필요함.png'
 import iconDanger from '../assets/만취.png'
 
-const DUMMY_STATE = 'caution'
-// "safe" / "caution" / "danger" 중 하나로 바꿔서 테스트
+const DEFAULT_MEASURE = { sensor_value: 0, state_level: 'safe', state_label: '안정 단계' }
 
-const dummyLogs = [
-  {
-    id: 1,
-    measured_at: '2026-05-26 11:32:00',
-    sensor_value: 1920,
-    state_level: 'caution',
-    state_label: '주의 단계',
-    state_message:
-      '알코올 반응이 감지되고 있습니다. 천천히 마시는 것을 권장합니다.',
-  },
-  {
-    id: 2,
-    measured_at: '2026-05-26 10:15:00',
-    sensor_value: 800,
-    state_level: 'safe',
-    state_label: '안정 단계',
-    state_message: '현재는 안정적인 상태로 보입니다.',
-  },
-]
-
-const DUMMY_CURRENT_BY_STATE = {
-  safe: { sensor_value: 0, state_level: 'safe', state_label: '안정 단계' },
-  caution: { sensor_value: 1920, state_level: 'caution', state_label: '주의 단계' },
-  danger: { sensor_value: 3500, state_level: 'danger', state_label: '위험 단계' },
+function getLatestMeasurement(logs) {
+  const measurements = logs
+    .filter((log) => log.sensor_value > 0)
+    .sort((a, b) => new Date(b.measured_at) - new Date(a.measured_at))
+  if (measurements.length === 0) return DEFAULT_MEASURE
+  const { sensor_value, state_level, state_label } = measurements[0]
+  return { sensor_value, state_level, state_label }
 }
 
 const STATE_UI = {
@@ -100,44 +83,42 @@ function StatusBadge({ stateLevel, label }) {
 
 export default function StatusPage() {
   const [logs, setLogs] = useState([])
+  const [current, setCurrent] = useState(DEFAULT_MEASURE)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // let cancelled = false
-    //
-    // async function fetchData() {
-    //   setLoading(true)
-    //   try {
-    //     const { data } = await api.logsToday()
-    //     if (!cancelled && data?.success) {
-    //       setLogs(data.logs ?? [])
-    //     }
-    //   } catch (error) {
-    //     console.error('Failed to fetch today logs:', error)
-    //   } finally {
-    //     if (!cancelled) setLoading(false)
-    //   }
-    // }
-    //
-    // fetchData()
-    // return () => {
-    //   cancelled = true
-    // }
+    let cancelled = false
 
-    setLogs(dummyLogs)
-    setLoading(false)
+    async function fetchData() {
+      setLoading(true)
+      try {
+        const { data } = await api.logsToday()
+        if (!cancelled && data?.success) {
+          const nextLogs = data.logs ?? []
+          setLogs(nextLogs)
+          setCurrent(getLatestMeasurement(nextLogs))
+        }
+      } catch (error) {
+        console.error('Failed to fetch today logs:', error)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    fetchData()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  const current =
-    DUMMY_CURRENT_BY_STATE[DUMMY_STATE] ?? DUMMY_CURRENT_BY_STATE.safe
-  const stateLevel = DUMMY_STATE
+  const stateLevel = current.state_level
   const sensorValue = current.sensor_value
   const percent = sensorToPercent(sensorValue)
   const ui = getStateUi(stateLevel)
 
-  const sortedLogs = [...logs].sort(
-    (a, b) => new Date(b.measured_at) - new Date(a.measured_at),
-  )
+  const sortedLogs = [...logs]
+    .filter((log) => log.sensor_value > 0)
+    .sort((a, b) => new Date(b.measured_at) - new Date(a.measured_at))
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20">

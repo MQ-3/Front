@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 
 const DRINK_TYPES = ['소주', '맥주', '막걸리']
@@ -75,13 +76,18 @@ function getLatestMeasurement(logs) {
   }
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
 export default function TodayPage() {
   const [logs, setLogs] = useState([])
   const [currentMeasure, setCurrentMeasure] = useState(DEFAULT_MEASURE)
   const [measuring, setMeasuring] = useState(false)
+  const [measurePhase, setMeasurePhase] = useState(null) // 'countdown' | 'blow' | 'analyzing' | null
+  const [phaseCount, setPhaseCount] = useState(null)
   const [adding, setAdding] = useState(false)
   const [drinkType, setDrinkType] = useState('소주')
   const [drinkAmount, setDrinkAmount] = useState('')
+  const navigate = useNavigate()
 
   function getUserId() {
     try {
@@ -122,11 +128,36 @@ export default function TodayPage() {
     .sort((a, b) => new Date(b.measured_at) - new Date(a.measured_at))
 
   async function handleMeasure() {
+    if (measuring) return
     setMeasuring(true)
-    try {
-      const { data } = await api.measure()
-      if (!data?.success) return
 
+    // API 호출 미리 시작
+    const measurePromise = api.measure().catch(() => null)
+
+    try {
+      // 단계 1: 카운트다운 3 → 2 → 1 "부세요!"
+      for (let i = 3; i >= 1; i--) {
+        setMeasurePhase('countdown')
+        setPhaseCount(i)
+        await sleep(1000)
+      }
+
+      // 단계 2: 불기 구간 1 → 2 → 3 → 4
+      for (let i = 1; i <= 4; i++) {
+        setMeasurePhase('blow')
+        setPhaseCount(i)
+        await sleep(1000)
+      }
+
+      // 단계 3: 분석 중
+      setMeasurePhase('analyzing')
+      setPhaseCount(null)
+
+      // API 결과 대기
+      const result = await measurePromise
+      if (!result?.data?.success) return
+
+      const { data } = result
       const nextMeasure = {
         sensor_value: data.sensor_value,
         state_level: data.state.level,
@@ -146,6 +177,8 @@ export default function TodayPage() {
     } catch (error) {
       console.error('Failed to measure:', error)
     } finally {
+      setMeasurePhase(null)
+      setPhaseCount(null)
       setMeasuring(false)
     }
   }
@@ -187,20 +220,42 @@ export default function TodayPage() {
 
       <main className="p-4 space-y-4">
         <section className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <div className={`h-2 ${ui.bar}`} />
-          <div className="p-6 flex flex-col items-center">
-            <p className={`${ui.text} text-5xl font-bold mb-3`}>{percent}</p>
-            <span
-              className={`${ui.badge} text-white font-medium px-5 py-1.5 rounded-full mb-5`}
-            >
-              {currentMeasure.state_label || ui.badgeText}
-            </span>
-            <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className={`h-full ${ui.bar} rounded-full transition-all duration-300`}
-                style={{ width: `${fillWidth}%` }}
-              />
-            </div>
+          <div className={`h-2 ${measurePhase ? 'bg-blue-400' : ui.bar}`} />
+          <div className="p-6 flex flex-col items-center min-h-[160px] justify-center">
+            {measurePhase === 'countdown' && (
+              <>
+                <p className="text-7xl font-bold text-blue-500 mb-3 transition-all">{phaseCount}</p>
+                <p className="text-gray-500 text-lg">
+                  {phaseCount === 1 ? '부세요! 🌬️' : '준비하세요'}
+                </p>
+              </>
+            )}
+            {measurePhase === 'blow' && (
+              <>
+                <p className="text-7xl font-bold text-green-500 mb-3">{phaseCount}</p>
+                <p className="text-gray-500 text-lg">계속 불어주세요 🌬️</p>
+              </>
+            )}
+            {measurePhase === 'analyzing' && (
+              <>
+                <p className="text-3xl font-bold text-gray-400 mb-3 animate-pulse">분석 중...</p>
+                <p className="text-sm text-gray-400">잠시만 기다려주세요</p>
+              </>
+            )}
+            {!measurePhase && (
+              <>
+                <p className={`${ui.text} text-5xl font-bold mb-3`}>{percent}</p>
+                <span className={`${ui.badge} text-white font-medium px-5 py-1.5 rounded-full mb-5`}>
+                  {currentMeasure.state_label || ui.badgeText}
+                </span>
+                <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${ui.bar} rounded-full transition-all duration-300`}
+                    style={{ width: `${fillWidth}%` }}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -263,6 +318,14 @@ export default function TodayPage() {
             ＋ 추가
           </button>
         </section>
+
+        <button
+          type="button"
+          onClick={() => navigate('/shorts')}
+          className="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 font-medium py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors"
+        >
+          <span role="img" aria-hidden="true">🎬</span> 드라마 목록 보기
+        </button>
 
         <section>
           <h2 className="font-bold text-gray-900 mb-3">음주 기록</h2>

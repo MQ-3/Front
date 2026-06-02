@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { api } from '../api'
 import iconPerfect from '../assets/누가봐도 건강.png'
 import iconGood from '../assets/피곤한 남자.png'
 import iconCaution from '../assets/숙취 쩔어.png'
 import iconWarning from '../assets/두통.png'
 import iconDanger from '../assets/병원가봐요.png'
-
-const DUMMY_DRINK_DAYS = 8
-// 0 / 1~6 / 7~12 / 13~19 / 20 이상으로 바꿔서 5단계 전부 테스트
 
 const GOOD_TIPS = [
   {
@@ -229,32 +227,28 @@ function getTipsForLevel(level) {
 
 export default function HealthPage() {
   const [loading, setLoading] = useState(true)
-  const drinkDays = DUMMY_DRINK_DAYS
+  const [drinkDays, setDrinkDays] = useState(0)
+
+  const fetchMonth = useCallback(async () => {
+    const today = new Date()
+    const currentYear = today.getFullYear()
+    const currentMonth = today.getMonth() + 1
+    setLoading(true)
+    try {
+      const { data } = await api.calendarMonth(currentYear, currentMonth)
+      if (data?.success) {
+        setDrinkDays(data.days?.length ?? 0)
+      }
+    } catch (error) {
+      console.error('Failed to fetch calendar month:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    // let cancelled = false
-    //
-    // async function fetchMonth() {
-    //   setLoading(true)
-    //   try {
-    //     const { data } = await api.calendarMonth(currentYear, currentMonth)
-    //     if (!cancelled && data?.success) {
-    //       setDrinkDays(data.days?.length ?? 0)
-    //     }
-    //   } catch (error) {
-    //     console.error('Failed to fetch calendar month:', error)
-    //   } finally {
-    //     if (!cancelled) setLoading(false)
-    //   }
-    // }
-    //
-    // fetchMonth()
-    // return () => {
-    //   cancelled = true
-    // }
-
-    setLoading(false)
-  }, [])
+    fetchMonth()
+  }, [fetchMonth])
 
   const level = getLevel(drinkDays)
   const banner = LEVEL_BANNER[level]
