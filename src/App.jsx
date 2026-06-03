@@ -9,6 +9,7 @@ import MyPage from './pages/MyPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ProfileSetupPage from './pages/ProfileSetupPage'
+import ProfileEditPage from './pages/ProfileEditPage'
 import ShortsPage from './pages/ShortsPage'
 
 function ScrollToTop() {
@@ -74,6 +75,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/profile-setup" element={<ProfileSetupPage />} />
+        <Route path="/profile-edit" element={<ProfileEditPage />} />
         <Route path="/shorts" element={<ShortsPage />} />
       </Routes>
       <BottomNav />

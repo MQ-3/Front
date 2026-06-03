@@ -112,7 +112,15 @@ export default function MyPage() {
         </section>
 
         {user && (
-          <section className="bg-white rounded-2xl shadow-sm p-4">
+          <section className="bg-white rounded-2xl shadow-sm p-4 space-y-3">
+            <button
+              type="button"
+              onClick={() => navigate('/profile-edit')}
+              className="w-full flex items-center justify-center gap-2 bg-blue-50 border border-blue-300 text-blue-600 font-medium py-3 rounded-xl hover:bg-blue-100 transition-colors"
+            >
+              <span role="img" aria-hidden="true">✏️</span>
+              정보 수정
+            </button>
             <button
               type="button"
               onClick={handleDeleteAccount}
