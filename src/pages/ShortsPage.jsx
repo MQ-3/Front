@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import dramaImg from '../assets/드라마.png'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 
@@ -86,7 +87,7 @@ export default function ShortsPage() {
       <main className="p-4 space-y-4">
         {/* 요약 카드 */}
         <section className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 flex flex-col items-center text-center">
-          <span className="text-4xl mb-2" role="img" aria-hidden="true">🎬</span>
+          <img src={dramaImg} alt="드라마" className="w-30 h-30 mb-2 object-contain" />
           <h2 className="text-xl font-bold text-gray-900 mb-1">숏드라마 시청</h2>
           <p className="text-sm text-gray-500 mb-5">음주 측정으로 에피소드를 해제하세요!</p>
           <div className="flex gap-8">
@@ -101,36 +102,12 @@ export default function ShortsPage() {
           </div>
         </section>
 
-        {/* 과음 경고 또는 체크인 결과 */}
-        {heavyDrinking ? (
+        {/* 과음 경고 */}
+        {heavyDrinking && (
           <div className="rounded-xl p-4 text-center text-sm font-medium bg-red-50 text-red-700 border border-red-200">
             🚨 과음이 의심됩니다. 음주를 멈추세요.
           </div>
-        ) : (
-          unlockResult && (
-            <div className={`rounded-xl p-4 text-center text-sm font-medium ${
-              unlockResult.unlocked
-                ? 'bg-green-50 text-green-700 border border-green-200'
-                : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-            }`}>
-              {unlockResult.message}
-            </div>
-          )
         )}
-
-        {/* 에피소드 언락 버튼 — 과음 시 잠금 */}
-        <button
-          type="button"
-          onClick={handleUnlock}
-          disabled={unlocking || heavyDrinking}
-          className={`w-full font-medium py-3.5 rounded-xl shadow-sm transition-colors text-white ${
-            heavyDrinking
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300'
-          }`}
-        >
-          {heavyDrinking ? '🔒 음주 측정 잠김' : unlocking ? '측정 중...' : '🍶 술친구 체크인'}
-        </button>
 
         {/* 에피소드 목록 */}
         <section className="bg-white rounded-2xl shadow-sm p-4">
