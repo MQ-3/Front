@@ -112,7 +112,7 @@ export default function ShortsPage() {
         {/* 에피소드 목록 */}
         <section className="bg-white rounded-2xl shadow-sm p-4">
           <h2 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span role="img" aria-hidden="true">🎬</span> 에피소드 목록
+            에피소드 목록
           </h2>
 
           {loading ? (

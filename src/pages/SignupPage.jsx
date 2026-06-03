@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/index.js'
+import rabbitImg from '../assets/술친구토끼.png'
 
 export default function SignupPage() {
   const navigate = useNavigate()
@@ -8,14 +9,16 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleSignup() {
+    setError('')
     if (password.length < 6) {
-      alert('비밀번호는 6자 이상이어야 합니다.')
+      setError('비밀번호는 6자 이상이어야 합니다.')
       return
     }
     if (password !== passwordConfirm) {
-      alert('비밀번호가 일치하지 않습니다.')
+      setError('비밀번호가 일치하지 않습니다.')
       return
     }
 
@@ -26,76 +29,83 @@ export default function SignupPage() {
         localStorage.setItem('user', JSON.stringify({ id: data.user.id, email: data.user.email }))
         navigate('/profile-setup')
       } else {
-        alert('이미 사용 중인 이메일입니다.')
+        setError('이미 사용 중인 이메일입니다.')
       }
     } catch {
-      alert('이미 사용 중인 이메일입니다.')
+      setError('이미 사용 중인 이메일입니다.')
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-white border-b border-gray-200 py-4 relative">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800"
-          aria-label="홈으로"
-        >
-          🏠
-        </button>
-        <h1 className="text-center text-base font-medium text-gray-900">
-          음주 측정 모니터링
-        </h1>
-      </header>
+    <div className="relative min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-b from-[#1db520] via-[#148917] to-[#0a5c0e]">
 
-      <main className="flex-1 flex flex-col justify-center p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">회원가입</h2>
+      {/* 뒤로가기 */}
+      <button
+        type="button"
+        onClick={() => navigate('/login')}
+        className="absolute top-5 left-5 text-white text-xl"
+        aria-label="뒤로가기"
+      >
+        ←
+      </button>
 
-        <div className="border border-gray-200 rounded-lg overflow-hidden mb-2">
+      {/* 타이틀 */}
+      <div className="mb-4 text-center">
+        <h1 className="text-3xl font-bold text-white tracking-tight">회원가입</h1>
+      </div>
+
+      {/* 카드 */}
+      <div className="w-full max-w-sm mx-auto bg-white rounded-2xl shadow-2xl p-6 space-y-4">
+
+        {/* 토끼 이미지 */}
+        <div className="flex justify-center">
+          <img src={rabbitImg} alt="술친구 토끼" className="w-35 h-35 object-contain" />
+        </div>
+
+        {/* 입력 */}
+        <div className="space-y-3">
           <input
             type="email"
             placeholder="이메일"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border-b border-gray-200 outline-none focus:bg-gray-50"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
           />
           <input
             type="password"
-            placeholder="비밀번호"
+            placeholder="비밀번호 (6자 이상)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border-b border-gray-200 outline-none focus:bg-gray-50"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
           />
           <input
             type="password"
             placeholder="비밀번호 확인"
             value={passwordConfirm}
             onChange={(e) => setPasswordConfirm(e.target.value)}
-            className="w-full px-4 py-3 outline-none focus:bg-gray-50"
+            onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
           />
         </div>
-        <p className="text-xs text-gray-400 mb-6">6자 이상 입력해주세요</p>
 
+        {/* 에러 */}
+        {error && (
+          <p className="text-red-500 text-xs text-center">{error}</p>
+        )}
+
+        {/* 가입 버튼 */}
         <button
           type="button"
           onClick={handleSignup}
           disabled={submitting || !email || !password || !passwordConfirm}
-          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium py-3 rounded-xl transition-colors mb-3"
+          className="w-full text-white font-medium py-3.5 rounded-xl transition-colors disabled:opacity-50"
+          style={{ backgroundColor: '#148917' }}
         >
           {submitting ? '가입 중...' : '가입하기'}
         </button>
-
-        <button
-          type="button"
-          onClick={() => navigate('/login')}
-          className="w-full bg-white border border-gray-300 text-gray-500 font-medium py-3 rounded-xl transition-colors"
-        >
-          로그인으로 돌아가기
-        </button>
-      </main>
+      </div>
     </div>
   )
 }

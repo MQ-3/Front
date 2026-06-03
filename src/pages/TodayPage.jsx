@@ -217,10 +217,10 @@ export default function TodayPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20">
-      <header className="bg-white border-b border-gray-200">
-        <p className="text-center text-lg text-gray-600 pb-3">
+      <header className="py-4" style={{ backgroundColor: '#148917' }}>
+        <h1 className="text-center text-xl font-bold text-white">
           오늘의 음주 측정
-        </p>
+        </h1>
       </header>
 
       <main className="p-4 space-y-4">
@@ -281,9 +281,6 @@ export default function TodayPage() {
 
         <section className="bg-white rounded-2xl shadow-sm p-4 space-y-4">
           <h2 className="font-bold text-gray-900">
-            <span role="img" aria-hidden="true">
-              🍸
-            </span>{' '}
             음주 기록 추가
           </h2>
 

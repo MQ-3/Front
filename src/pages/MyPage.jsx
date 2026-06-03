@@ -38,7 +38,7 @@ export default function MyPage() {
 
   function handleLogout() {
     localStorage.removeItem('user')
-    setUser(null)
+    navigate('/login')
   }
 
   async function handleDeleteAccount() {
@@ -59,9 +59,9 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20">
-      <header className="bg-white border-b border-gray-200 py-4">
-        <h1 className="text-center text-base font-medium text-gray-900">
-          음주 측정 모니터링
+      <header className="py-4" style={{ backgroundColor: '#148917' }}>
+        <h1 className="text-center text-xl font-bold text-white">
+          마이페이지
         </h1>
       </header>
 
@@ -118,7 +118,6 @@ export default function MyPage() {
               onClick={() => navigate('/profile-edit')}
               className="w-full flex items-center justify-center gap-2 bg-blue-50 border border-blue-300 text-blue-600 font-medium py-3 rounded-xl hover:bg-blue-100 transition-colors"
             >
-              <span role="img" aria-hidden="true">✏️</span>
               정보 수정
             </button>
             <button
@@ -126,7 +125,6 @@ export default function MyPage() {
               onClick={handleDeleteAccount}
               className="w-full flex items-center justify-center gap-2 border border-red-400 text-red-500 font-medium py-3 rounded-xl hover:bg-red-50 transition-colors"
             >
-              <span role="img" aria-hidden="true">🗑️</span>
               회원 탈퇴
             </button>
           </section>

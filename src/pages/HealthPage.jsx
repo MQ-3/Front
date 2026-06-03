@@ -258,9 +258,9 @@ export default function HealthPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20">
-      <header className="bg-white border-b border-gray-200 py-4">
-        <h1 className="text-center text-base font-medium text-gray-900">
-          음주 측정 모니터링
+      <header className="py-4" style={{ backgroundColor: '#148917' }}>
+        <h1 className="text-center text-xl font-bold text-white">
+          건강을 관리해요
         </h1>
       </header>
 
