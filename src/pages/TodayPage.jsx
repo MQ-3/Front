@@ -218,10 +218,7 @@ export default function TodayPage() {
   return (
     <div className="min-h-screen bg-gray-100 pb-20">
       <header className="bg-white border-b border-gray-200">
-        <h1 className="text-center text-base font-medium text-gray-900 py-4">
-          음주 측정 모니터링
-        </h1>
-        <p className="text-center text-sm text-gray-600 pb-3">
+        <p className="text-center text-lg text-gray-600 pb-3">
           오늘의 음주 측정
         </p>
       </header>
@@ -337,7 +334,7 @@ export default function TodayPage() {
             type="button"
             onClick={handleAddDrink}
             disabled={adding || !drinkType}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white font-medium py-3 rounded-xl transition-colors"
+            className="w-full bg-[#148917] hover:bg-[#0f6f12] disabled:bg-[#7ac67c] text-white font-medium py-3 rounded-xl transition-colors"
           >
             ＋ 추가
           </button>
@@ -347,8 +344,7 @@ export default function TodayPage() {
           type="button"
           onClick={() => navigate('/shorts')}
           className="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 font-medium py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors"
-        >
-          <span role="img" aria-hidden="true">🎬</span> 드라마 목록 보기
+        > 드라마 목록 보기
         </button>
 
         <section>

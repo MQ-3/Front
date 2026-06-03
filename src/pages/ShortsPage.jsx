@@ -2,12 +2,22 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 
+function getUserId() {
+  try {
+    const stored = localStorage.getItem('user')
+    return stored ? JSON.parse(stored).id : null
+  } catch {
+    return null
+  }
+}
+
 export default function ShortsPage() {
   const navigate = useNavigate()
   const [shorts, setShorts] = useState([])
   const [loading, setLoading] = useState(true)
   const [unlocking, setUnlocking] = useState(false)
   const [unlockResult, setUnlockResult] = useState(null)
+  const [heavyDrinking, setHeavyDrinking] = useState(false)
 
   const fetchShorts = useCallback(async () => {
     try {
@@ -20,18 +30,32 @@ export default function ShortsPage() {
     }
   }, [])
 
+  const fetchHeavyStatus = useCallback(async () => {
+    try {
+      const userId = getUserId()
+      const { data } = await api.logsToday(userId)
+      if (data?.success) setHeavyDrinking(data.heavy_drinking ?? false)
+    } catch (error) {
+      console.error('Failed to fetch heavy drinking status:', error)
+    }
+  }, [])
+
   useEffect(() => {
     fetchShorts()
-  }, [fetchShorts])
+    fetchHeavyStatus()
+  }, [fetchShorts, fetchHeavyStatus])
 
   async function handleUnlock() {
+    if (heavyDrinking) return
     setUnlocking(true)
     setUnlockResult(null)
     try {
-      const { data } = await api.unlock()
+      const userId = getUserId()
+      const { data } = await api.unlock(userId)
       if (data?.success) {
         setUnlockResult(data)
         await fetchShorts()
+        await fetchHeavyStatus()
       }
     } catch (error) {
       console.error('Failed to unlock:', error)
@@ -63,8 +87,8 @@ export default function ShortsPage() {
         {/* 요약 카드 */}
         <section className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 flex flex-col items-center text-center">
           <span className="text-4xl mb-2" role="img" aria-hidden="true">🎬</span>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">술친구 AI 숏츠</h2>
-          <p className="text-sm text-gray-500 mb-5">건강한 측정으로 에피소드를 해제하세요</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">숏드라마 시청</h2>
+          <p className="text-sm text-gray-500 mb-5">음주 측정으로 에피소드를 해제하세요!</p>
           <div className="flex gap-8">
             <div className="text-center">
               <p className="text-3xl font-bold text-blue-500">{unlockedCount}/{totalCount}</p>
@@ -77,25 +101,35 @@ export default function ShortsPage() {
           </div>
         </section>
 
-        {/* 체크인 결과 */}
-        {unlockResult && (
-          <div className={`rounded-xl p-4 text-center text-sm font-medium ${
-            unlockResult.unlocked
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-          }`}>
-            {unlockResult.message}
+        {/* 과음 경고 또는 체크인 결과 */}
+        {heavyDrinking ? (
+          <div className="rounded-xl p-4 text-center text-sm font-medium bg-red-50 text-red-700 border border-red-200">
+            🚨 과음이 의심됩니다. 음주를 멈추세요.
           </div>
+        ) : (
+          unlockResult && (
+            <div className={`rounded-xl p-4 text-center text-sm font-medium ${
+              unlockResult.unlocked
+                ? 'bg-green-50 text-green-700 border border-green-200'
+                : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+            }`}>
+              {unlockResult.message}
+            </div>
+          )
         )}
 
-        {/* 술친구 체크인 버튼 */}
+        {/* 에피소드 언락 버튼 — 과음 시 잠금 */}
         <button
           type="button"
           onClick={handleUnlock}
-          disabled={unlocking}
-          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium py-3.5 rounded-xl shadow-sm transition-colors"
+          disabled={unlocking || heavyDrinking}
+          className={`w-full font-medium py-3.5 rounded-xl shadow-sm transition-colors text-white ${
+            heavyDrinking
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300'
+          }`}
         >
-          {unlocking ? '측정 중...' : '🍶 술친구 체크인'}
+          {heavyDrinking ? '🔒 음주 측정 잠김' : unlocking ? '측정 중...' : '🍶 술친구 체크인'}
         </button>
 
         {/* 에피소드 목록 */}
