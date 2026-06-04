@@ -2,12 +2,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 
+const BASE_URL = 'http://192.168.30.14:5000'
+
 export default function ShortsPage() {
   const navigate = useNavigate()
   const [shorts, setShorts] = useState([])
   const [loading, setLoading] = useState(true)
   const [unlocking, setUnlocking] = useState(false)
   const [unlockResult, setUnlockResult] = useState(null)
+  const [selectedShort, setSelectedShort] = useState(null)
 
   const fetchShorts = useCallback(async () => {
     try {
@@ -77,6 +80,30 @@ export default function ShortsPage() {
           </div>
         </section>
 
+        {/* 비디오 플레이어 */}
+        {selectedShort && (
+          <section className="bg-black rounded-2xl overflow-hidden shadow-sm">
+            <div className="px-4 py-3 flex items-center justify-between bg-gray-900">
+              <p className="text-white text-sm font-medium truncate">{selectedShort.title}</p>
+              <button
+                type="button"
+                onClick={() => setSelectedShort(null)}
+                className="text-gray-400 text-xl ml-3 shrink-0"
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+            </div>
+            <video
+              key={selectedShort.episode_no}
+              src={`${BASE_URL}${selectedShort.video_path}`}
+              controls
+              autoPlay
+              className="w-full max-h-72 bg-black"
+            />
+          </section>
+        )}
+
         {/* 체크인 결과 */}
         {unlockResult && (
           <div className={`rounded-xl p-4 text-center text-sm font-medium ${
@@ -116,14 +143,15 @@ export default function ShortsPage() {
                 short.is_unlocked ? (
                   <li
                     key={short.episode_no}
-                    className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-4"
+                    className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-4 cursor-pointer active:bg-green-100"
+                    onClick={() => setSelectedShort(short)}
                   >
                     <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
                       <span className="text-white font-bold text-sm">{short.episode_no}</span>
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="font-bold text-gray-900">{short.title}</p>
-                      <p className="text-sm text-green-600 mt-0.5">▶ 시청 가능</p>
+                      <p className="text-sm text-green-600 mt-0.5">▶ 시청 가능 (탭하여 재생)</p>
                     </div>
                   </li>
                 ) : (
