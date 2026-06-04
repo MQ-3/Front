@@ -12,6 +12,7 @@ export const api = {
   logsRange: (start, end, userId) => axios.get(`${BASE_URL}/api/logs/range`, { params: { start, end, user_id: userId } }),
   shorts: () => axios.get(`${BASE_URL}/api/shorts`),
   unlock: (userId) => axios.post(`${BASE_URL}/api/shorts/unlock`, userId ? { user_id: userId } : {}),
+  markWatched: (episodeNo) => axios.post(`${BASE_URL}/api/shorts/watched`, { episode_no: episodeNo }),
   register: (data) => axios.post(`${BASE_URL}/api/auth/register`, data),
   login: (data) => axios.post(`${BASE_URL}/api/auth/login`, data),
   updateProfile: (data) => axios.put(`${BASE_URL}/api/auth/profile`, data),

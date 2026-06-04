@@ -68,7 +68,17 @@ export default function ShortsPage() {
     }
   }
 
+  async function handleVideoEnded(episodeNo) {
+    try {
+      await api.markWatched(episodeNo)
+      await fetchShorts()
+    } catch (error) {
+      console.error('Failed to mark watched:', error)
+    }
+  }
+
   const unlockedCount = shorts.filter((s) => s.is_unlocked).length
+  const watchedCount = shorts.filter((s) => s.is_watched).length
   const totalCount = shorts.length
 
   return (
@@ -99,7 +109,7 @@ export default function ShortsPage() {
               <p className="text-sm text-gray-500 mt-1">해제됨</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-green-500">0/{totalCount}</p>
+              <p className="text-3xl font-bold text-green-500">{watchedCount}/{totalCount}</p>
               <p className="text-sm text-gray-500 mt-1">시청 완료</p>
             </div>
           </div>
@@ -109,6 +119,23 @@ export default function ShortsPage() {
         {heavyDrinking && (
           <div className="rounded-xl p-4 text-center text-sm font-medium bg-red-50 text-red-700 border border-red-200">
             🚨 과음이 의심됩니다. 음주를 멈추세요.
+          </div>
+        )}
+
+        {/* 음주 측정 버튼 */}
+        <button
+          type="button"
+          onClick={handleUnlock}
+          disabled={unlocking || heavyDrinking}
+          className="w-full py-4 rounded-2xl text-white font-bold text-base bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          {unlocking ? '측정 중...' : '음주 측정하고 에피소드 해제'}
+        </button>
+
+        {/* 측정 결과 메시지 */}
+        {unlockResult && (
+          <div className={`rounded-xl p-4 text-center text-sm font-medium ${unlockResult.unlocked ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
+            {unlockResult.message}
           </div>
         )}
 
@@ -130,7 +157,7 @@ export default function ShortsPage() {
                 short.is_unlocked ? (
                   <li
                     key={short.episode_no}
-                    onClick={() => setSelectedVideo({ title: short.title, url: `${VIDEO_BASE}${short.video_path}` })}
+                    onClick={() => setSelectedVideo({ title: short.title, url: `${VIDEO_BASE}${short.video_path}`, episodeNo: short.episode_no })}
                     className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:bg-green-100 transition-colors"
                   >
                     <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
@@ -186,6 +213,7 @@ export default function ShortsPage() {
               controls
               autoPlay
               className="w-full"
+              onEnded={() => handleVideoEnded(selectedVideo.episodeNo)}
             />
           </div>
         </div>
