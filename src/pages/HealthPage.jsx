@@ -225,6 +225,15 @@ function getTipsForLevel(level) {
   return DANGER_TIPS
 }
 
+function getUserId() {
+  try {
+    const stored = localStorage.getItem('user')
+    return stored ? JSON.parse(stored).id : null
+  } catch {
+    return null
+  }
+}
+
 export default function HealthPage() {
   const [loading, setLoading] = useState(true)
   const [drinkDays, setDrinkDays] = useState(0)
@@ -235,7 +244,7 @@ export default function HealthPage() {
     const currentMonth = today.getMonth() + 1
     setLoading(true)
     try {
-      const { data } = await api.calendarMonth(currentYear, currentMonth)
+      const { data } = await api.calendarMonth(currentYear, currentMonth, getUserId())
       if (data?.success) {
         setDrinkDays(data.days?.length ?? 0)
       }
