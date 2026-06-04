@@ -18,14 +18,13 @@ export default function ShortsPage() {
   const navigate = useNavigate()
   const [shorts, setShorts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [unlocking, setUnlocking] = useState(false)
-  const [unlockResult, setUnlockResult] = useState(null)
   const [heavyDrinking, setHeavyDrinking] = useState(false)
   const [selectedVideo, setSelectedVideo] = useState(null)
 
   const fetchShorts = useCallback(async () => {
     try {
-      const { data } = await api.shorts()
+      const userId = getUserId()
+      const { data } = await api.shorts(userId)
       if (data?.success) setShorts(data.shorts ?? [])
     } catch (error) {
       console.error('Failed to fetch shorts:', error)
@@ -49,28 +48,11 @@ export default function ShortsPage() {
     fetchHeavyStatus()
   }, [fetchShorts, fetchHeavyStatus])
 
-  async function handleUnlock() {
-    if (heavyDrinking) return
-    setUnlocking(true)
-    setUnlockResult(null)
+  async function handleOpenVideo(short) {
+    setSelectedVideo({ title: short.title, url: `${VIDEO_BASE}${short.video_path}`, episodeNo: short.episode_no })
     try {
       const userId = getUserId()
-      const { data } = await api.unlock(userId)
-      if (data?.success) {
-        setUnlockResult(data)
-        await fetchShorts()
-        await fetchHeavyStatus()
-      }
-    } catch (error) {
-      console.error('Failed to unlock:', error)
-    } finally {
-      setUnlocking(false)
-    }
-  }
-
-  async function handleVideoEnded(episodeNo) {
-    try {
-      await api.markWatched(episodeNo)
+      await api.markWatched(short.episode_no, userId)
       await fetchShorts()
     } catch (error) {
       console.error('Failed to mark watched:', error)
@@ -125,19 +107,12 @@ export default function ShortsPage() {
         {/* 음주 측정 버튼 */}
         <button
           type="button"
-          onClick={handleUnlock}
-          disabled={unlocking || heavyDrinking}
+          onClick={() => navigate('/', { state: { unlockShorts: true } })}
+          disabled={heavyDrinking}
           className="w-full py-4 rounded-2xl text-white font-bold text-base bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
-          {unlocking ? '측정 중...' : '음주 측정하고 에피소드 해제'}
+          음주 측정하고 에피소드 해제
         </button>
-
-        {/* 측정 결과 메시지 */}
-        {unlockResult && (
-          <div className={`rounded-xl p-4 text-center text-sm font-medium ${unlockResult.unlocked ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
-            {unlockResult.message}
-          </div>
-        )}
 
         {/* 에피소드 목록 */}
         <section className="bg-white rounded-2xl shadow-sm p-4">
@@ -157,7 +132,7 @@ export default function ShortsPage() {
                 short.is_unlocked ? (
                   <li
                     key={short.episode_no}
-                    onClick={() => setSelectedVideo({ title: short.title, url: `${VIDEO_BASE}${short.video_path}`, episodeNo: short.episode_no })}
+                    onClick={() => handleOpenVideo(short)}
                     className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:bg-green-100 transition-colors"
                   >
                     <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
@@ -213,7 +188,6 @@ export default function ShortsPage() {
               controls
               autoPlay
               className="w-full"
-              onEnded={() => handleVideoEnded(selectedVideo.episodeNo)}
             />
           </div>
         </div>

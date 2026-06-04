@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { api } from '../api'
 
 const DRINK_TYPES = ['소주', '맥주']
@@ -91,7 +91,9 @@ export default function TodayPage() {
   const [drinkType, setDrinkType] = useState('소주')
   const [drinkQuantity, setDrinkQuantity] = useState(1)
   const [exceededTolerance, setExceededTolerance] = useState(false)
+  const [unlockResult, setUnlockResult] = useState(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
   function getUserId() {
     try {
@@ -178,6 +180,15 @@ export default function TodayPage() {
         state_message: data.state.message,
         user_id: getUserId(),
       })
+
+      if (location.state?.unlockShorts) {
+        try {
+          const { data: unlockData } = await api.unlock(getUserId(), data.state.level)
+          if (unlockData?.success) setUnlockResult(unlockData)
+        } catch (e) {
+          console.error('Failed to unlock shorts:', e)
+        }
+      }
 
       await fetchLogs()
     } catch (error) {
@@ -337,11 +348,17 @@ export default function TodayPage() {
           </button>
         </section>
 
+        {unlockResult && (
+          <div className={`rounded-xl p-4 text-center text-sm font-medium ${unlockResult.unlocked ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
+            {unlockResult.message}
+          </div>
+        )}
+
         <button
           type="button"
           onClick={() => navigate('/shorts')}
           className="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 font-medium py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors"
-        > 드라마 목록 보기
+        >드라마 목록 보기
         </button>
 
         <section>
