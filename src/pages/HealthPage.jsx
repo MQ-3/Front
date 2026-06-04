@@ -146,7 +146,7 @@ const LEVEL_BANNER = {
     subtitleColor: 'text-blue-500',
     icon: iconPerfect,
     title: '완벽한 한 달입니다!',
-    subtitle: (n) => `이번 달 음주 ${n}일`,
+    subtitle: (n) => `최근 30일 음주 ${n}일`,
   },
   good: {
     bg: 'bg-green-50',
@@ -155,7 +155,7 @@ const LEVEL_BANNER = {
     subtitleColor: 'text-green-600',
     icon: iconGood,
     title: '건강 관리 양호',
-    subtitle: (n) => `이번 달 ${n}일 음주하셨네요`,
+    subtitle: (n) => `최근 30일 중 ${n}일 음주하셨네요`,
   },
   caution: {
     bg: 'bg-[#fdf8ec]',
@@ -164,7 +164,7 @@ const LEVEL_BANNER = {
     subtitleColor: 'text-[#ca8a04]',
     icon: iconCaution,
     title: '건강 관리 필요',
-    subtitle: (n) => `이번 달 ${n}일 음주하셨네요`,
+    subtitle: (n) => `최근 30일 중 ${n}일 음주하셨네요`,
   },
   warning: {
     bg: 'bg-orange-50',
@@ -173,7 +173,7 @@ const LEVEL_BANNER = {
     subtitleColor: 'text-orange-600',
     icon: iconWarning,
     title: '건강 관리 필요',
-    subtitle: (n) => `이번 달 ${n}일 음주하셨네요`,
+    subtitle: (n) => `최근 30일 중 ${n}일 음주하셨네요`,
   },
   danger: {
     bg: 'bg-[#fdecea]',
@@ -182,7 +182,7 @@ const LEVEL_BANNER = {
     subtitleColor: 'text-red-600',
     icon: iconDanger,
     title: '병원 방문을 권고합니다',
-    subtitle: (n) => `이번 달 ${n}일 음주하셨네요`,
+    subtitle: (n) => `최근 30일 중 ${n}일 음주하셨네요`,
   },
 }
 
@@ -239,17 +239,20 @@ export default function HealthPage() {
   const [drinkDays, setDrinkDays] = useState(0)
 
   const fetchMonth = useCallback(async () => {
-    const today = new Date()
-    const currentYear = today.getFullYear()
-    const currentMonth = today.getMonth() + 1
     setLoading(true)
     try {
-      const { data } = await api.calendarMonth(currentYear, currentMonth, getUserId())
+      const today = new Date()
+      const end = today.toISOString().slice(0, 10)
+      const startDate = new Date(today)
+      startDate.setDate(startDate.getDate() - 29)
+      const start = startDate.toISOString().slice(0, 10)
+
+      const { data } = await api.logsRange(start, end, getUserId())
       if (data?.success) {
         setDrinkDays(data.days?.length ?? 0)
       }
     } catch (error) {
-      console.error('Failed to fetch calendar month:', error)
+      console.error('Failed to fetch health data:', error)
     } finally {
       setLoading(false)
     }

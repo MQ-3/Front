@@ -9,6 +9,7 @@ export const api = {
   calendarMonth: (year, month, userId) => axios.get(`${BASE_URL}/api/calendar/month`, { params: { year, month, user_id: userId } }),
   week: (userId) => axios.get(`${BASE_URL}/api/logs/week`, { params: { user_id: userId } }),
   status: () => axios.get(`${BASE_URL}/api/status`),
+  logsRange: (start, end, userId) => axios.get(`${BASE_URL}/api/logs/range`, { params: { start, end, user_id: userId } }),
   shorts: () => axios.get(`${BASE_URL}/api/shorts`),
   unlock: (userId) => axios.post(`${BASE_URL}/api/shorts/unlock`, userId ? { user_id: userId } : {}),
   register: (data) => axios.post(`${BASE_URL}/api/auth/register`, data),
