@@ -12,6 +12,8 @@ function getUserId() {
   }
 }
 
+const VIDEO_BASE = 'http://192.168.30.14:5000'
+
 export default function ShortsPage() {
   const navigate = useNavigate()
   const [shorts, setShorts] = useState([])
@@ -19,6 +21,7 @@ export default function ShortsPage() {
   const [unlocking, setUnlocking] = useState(false)
   const [unlockResult, setUnlockResult] = useState(null)
   const [heavyDrinking, setHeavyDrinking] = useState(false)
+  const [selectedVideo, setSelectedVideo] = useState(null)
 
   const fetchShorts = useCallback(async () => {
     try {
@@ -127,7 +130,8 @@ export default function ShortsPage() {
                 short.is_unlocked ? (
                   <li
                     key={short.episode_no}
-                    className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-4"
+                    onClick={() => setSelectedVideo({ title: short.title, url: `${VIDEO_BASE}${short.video_path}` })}
+                    className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:bg-green-100 transition-colors"
                   >
                     <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
                       <span className="text-white font-bold text-sm">{short.episode_no}</span>
@@ -156,6 +160,36 @@ export default function ShortsPage() {
           )}
         </section>
       </main>
+
+      {/* 동영상 모달 */}
+      {selectedVideo && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4"
+          onClick={() => setSelectedVideo(null)}
+        >
+          <div
+            className="w-full max-w-lg bg-black rounded-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3">
+              <p className="text-white text-sm font-medium truncate">{selectedVideo.title}</p>
+              <button
+                type="button"
+                onClick={() => setSelectedVideo(null)}
+                className="text-gray-400 hover:text-white text-xl ml-3"
+              >
+                ✕
+              </button>
+            </div>
+            <video
+              src={selectedVideo.url}
+              controls
+              autoPlay
+              className="w-full"
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
