@@ -242,7 +242,9 @@ export default function HealthPage() {
     setLoading(true)
     try {
       const today = new Date()
-      const end = today.toISOString().slice(0, 10)
+      const endDate = new Date(today)
+      endDate.setDate(endDate.getDate() + 1)
+      const end = endDate.toISOString().slice(0, 10)
       const startDate = new Date(today)
       startDate.setDate(startDate.getDate() - 29)
       const start = startDate.toISOString().slice(0, 10)
