@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { api } from '../api'
 
 const DRINK_TYPES = ['소주', '맥주']
@@ -91,7 +91,9 @@ export default function TodayPage() {
   const [drinkType, setDrinkType] = useState('소주')
   const [drinkQuantity, setDrinkQuantity] = useState(1)
   const [exceededTolerance, setExceededTolerance] = useState(false)
+  const [unlockResult, setUnlockResult] = useState(null)
   const navigate = useNavigate()
+  const location = useLocation()
 
   function getUserId() {
     try {
@@ -179,6 +181,15 @@ export default function TodayPage() {
         user_id: getUserId(),
       })
 
+      if (location.state?.unlockShorts) {
+        try {
+          const { data: unlockData } = await api.unlock(getUserId(), data.state.level)
+          if (unlockData?.success) setUnlockResult(unlockData)
+        } catch (e) {
+          console.error('Failed to unlock shorts:', e)
+        }
+      }
+
       await fetchLogs()
     } catch (error) {
       console.error('Failed to measure:', error)
@@ -217,13 +228,10 @@ export default function TodayPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20">
-      <header className="bg-white border-b border-gray-200">
-        <h1 className="text-center text-base font-medium text-gray-900 py-4">
-          음주 측정 모니터링
-        </h1>
-        <p className="text-center text-sm text-gray-600 pb-3">
+      <header className="py-4" style={{ backgroundColor: '#148917' }}>
+        <h1 className="text-center text-xl font-bold text-white">
           오늘의 음주 측정
-        </p>
+        </h1>
       </header>
 
       <main className="p-4 space-y-4">
@@ -284,9 +292,6 @@ export default function TodayPage() {
 
         <section className="bg-white rounded-2xl shadow-sm p-4 space-y-4">
           <h2 className="font-bold text-gray-900">
-            <span role="img" aria-hidden="true">
-              🍸
-            </span>{' '}
             음주 기록 추가
           </h2>
 
@@ -337,18 +342,23 @@ export default function TodayPage() {
             type="button"
             onClick={handleAddDrink}
             disabled={adding || !drinkType}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white font-medium py-3 rounded-xl transition-colors"
+            className="w-full bg-[#148917] hover:bg-[#0f6f12] disabled:bg-[#7ac67c] text-white font-medium py-3 rounded-xl transition-colors"
           >
             ＋ 추가
           </button>
         </section>
 
+        {unlockResult && (
+          <div className={`rounded-xl p-4 text-center text-sm font-medium ${unlockResult.unlocked ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
+            {unlockResult.message}
+          </div>
+        )}
+
         <button
           type="button"
           onClick={() => navigate('/shorts')}
           className="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 font-medium py-3.5 rounded-xl flex items-center justify-center gap-2 transition-colors"
-        >
-          <span role="img" aria-hidden="true">🎬</span> 드라마 목록 보기
+        >드라마 목록 보기
         </button>
 
         <section>

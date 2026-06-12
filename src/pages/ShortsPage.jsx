@@ -1,20 +1,40 @@
 import { useCallback, useEffect, useState } from 'react'
+import dramaImg from '../assets/드라마.png'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 
+<<<<<<< HEAD
 const BASE_URL = 'http://192.168.30.14:5000'
+=======
+function getUserId() {
+  try {
+    const stored = localStorage.getItem('user')
+    return stored ? JSON.parse(stored).id : null
+  } catch {
+    return null
+  }
+}
+
+const VIDEO_BASE = 'http://192.168.30.14:5000'
+>>>>>>> 37c8cf550cbc8e012c94c35039b55784a9db94b6
 
 export default function ShortsPage() {
   const navigate = useNavigate()
   const [shorts, setShorts] = useState([])
   const [loading, setLoading] = useState(true)
+<<<<<<< HEAD
   const [unlocking, setUnlocking] = useState(false)
   const [unlockResult, setUnlockResult] = useState(null)
   const [selectedShort, setSelectedShort] = useState(null)
+=======
+  const [heavyDrinking, setHeavyDrinking] = useState(false)
+  const [selectedVideo, setSelectedVideo] = useState(null)
+>>>>>>> 37c8cf550cbc8e012c94c35039b55784a9db94b6
 
   const fetchShorts = useCallback(async () => {
     try {
-      const { data } = await api.shorts()
+      const userId = getUserId()
+      const { data } = await api.shorts(userId)
       if (data?.success) setShorts(data.shorts ?? [])
     } catch (error) {
       console.error('Failed to fetch shorts:', error)
@@ -23,27 +43,34 @@ export default function ShortsPage() {
     }
   }, [])
 
+  const fetchHeavyStatus = useCallback(async () => {
+    try {
+      const userId = getUserId()
+      const { data } = await api.logsToday(userId)
+      if (data?.success) setHeavyDrinking(data.heavy_drinking ?? false)
+    } catch (error) {
+      console.error('Failed to fetch heavy drinking status:', error)
+    }
+  }, [])
+
   useEffect(() => {
     fetchShorts()
-  }, [fetchShorts])
+    fetchHeavyStatus()
+  }, [fetchShorts, fetchHeavyStatus])
 
-  async function handleUnlock() {
-    setUnlocking(true)
-    setUnlockResult(null)
+  async function handleOpenVideo(short) {
+    setSelectedVideo({ title: short.title, url: `${VIDEO_BASE}${short.video_path}`, episodeNo: short.episode_no })
     try {
-      const { data } = await api.unlock()
-      if (data?.success) {
-        setUnlockResult(data)
-        await fetchShorts()
-      }
+      const userId = getUserId()
+      await api.markWatched(short.episode_no, userId)
+      await fetchShorts()
     } catch (error) {
-      console.error('Failed to unlock:', error)
-    } finally {
-      setUnlocking(false)
+      console.error('Failed to mark watched:', error)
     }
   }
 
   const unlockedCount = shorts.filter((s) => s.is_unlocked).length
+  const watchedCount = shorts.filter((s) => s.is_watched).length
   const totalCount = shorts.length
 
   return (
@@ -65,21 +92,22 @@ export default function ShortsPage() {
       <main className="p-4 space-y-4">
         {/* 요약 카드 */}
         <section className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 flex flex-col items-center text-center">
-          <span className="text-4xl mb-2" role="img" aria-hidden="true">🎬</span>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">술친구 AI 숏츠</h2>
-          <p className="text-sm text-gray-500 mb-5">건강한 측정으로 에피소드를 해제하세요</p>
+          <img src={dramaImg} alt="드라마" className="w-30 h-30 mb-2 object-contain" />
+          <h2 className="text-xl font-bold text-gray-900 mb-1">숏드라마 시청</h2>
+          <p className="text-sm text-gray-500 mb-5">음주 측정으로 에피소드를 해제하세요!</p>
           <div className="flex gap-8">
             <div className="text-center">
               <p className="text-3xl font-bold text-blue-500">{unlockedCount}/{totalCount}</p>
               <p className="text-sm text-gray-500 mt-1">해제됨</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-green-500">0/{totalCount}</p>
+              <p className="text-3xl font-bold text-green-500">{watchedCount}/{totalCount}</p>
               <p className="text-sm text-gray-500 mt-1">시청 완료</p>
             </div>
           </div>
         </section>
 
+<<<<<<< HEAD
         {/* 비디오 플레이어 */}
         {selectedShort && (
           <section className="bg-black rounded-2xl overflow-hidden shadow-sm">
@@ -112,23 +140,29 @@ export default function ShortsPage() {
               : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
           }`}>
             {unlockResult.message}
+=======
+        {/* 과음 경고 */}
+        {heavyDrinking && (
+          <div className="rounded-xl p-4 text-center text-sm font-medium bg-red-50 text-red-700 border border-red-200">
+            🚨 과음이 의심됩니다. 음주를 멈추세요.
+>>>>>>> 37c8cf550cbc8e012c94c35039b55784a9db94b6
           </div>
         )}
 
-        {/* 술친구 체크인 버튼 */}
+        {/* 음주 측정 버튼 */}
         <button
           type="button"
-          onClick={handleUnlock}
-          disabled={unlocking}
-          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium py-3.5 rounded-xl shadow-sm transition-colors"
+          onClick={() => navigate('/', { state: { unlockShorts: true } })}
+          disabled={heavyDrinking}
+          className="w-full py-4 rounded-2xl text-white font-bold text-base bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
-          {unlocking ? '측정 중...' : '🍶 술친구 체크인'}
+          음주 측정하고 에피소드 해제
         </button>
 
         {/* 에피소드 목록 */}
         <section className="bg-white rounded-2xl shadow-sm p-4">
           <h2 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span role="img" aria-hidden="true">🎬</span> 에피소드 목록
+            에피소드 목록
           </h2>
 
           {loading ? (
@@ -143,8 +177,13 @@ export default function ShortsPage() {
                 short.is_unlocked ? (
                   <li
                     key={short.episode_no}
+<<<<<<< HEAD
                     className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-4 cursor-pointer active:bg-green-100"
                     onClick={() => setSelectedShort(short)}
+=======
+                    onClick={() => handleOpenVideo(short)}
+                    className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:bg-green-100 transition-colors"
+>>>>>>> 37c8cf550cbc8e012c94c35039b55784a9db94b6
                   >
                     <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
                       <span className="text-white font-bold text-sm">{short.episode_no}</span>
@@ -173,6 +212,36 @@ export default function ShortsPage() {
           )}
         </section>
       </main>
+
+      {/* 동영상 모달 */}
+      {selectedVideo && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4"
+          onClick={() => setSelectedVideo(null)}
+        >
+          <div
+            className="w-full max-w-lg bg-black rounded-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3">
+              <p className="text-white text-sm font-medium truncate">{selectedVideo.title}</p>
+              <button
+                type="button"
+                onClick={() => setSelectedVideo(null)}
+                className="text-gray-400 hover:text-white text-xl ml-3"
+              >
+                ✕
+              </button>
+            </div>
+            <video
+              src={selectedVideo.url}
+              controls
+              autoPlay
+              className="w-full"
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
