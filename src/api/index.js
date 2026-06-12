@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = 'http://192.168.30.14:5000'
+const BASE_URL = 'http://192.168.30.17:5000'
 
 export const api = {
   measure: () => axios.post(`${BASE_URL}/api/measure`),
